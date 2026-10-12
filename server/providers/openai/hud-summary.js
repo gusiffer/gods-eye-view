@@ -5,6 +5,7 @@ import {
 import { enforceRateLimit, openAiRateLimiter } from './rate-limit.js';
 import { readRequestBody } from '../common/request.js';
 import { OPENAI_HUD_SUMMARY_MODEL_DEFAULT } from './constants.js';
+import { createLocalHudSummaryResolver } from '../llm/hud-summary.js';
 
 function extractOpenAiResponseText(data) {
   if (typeof data?.output_text === 'string' && data.output_text.trim()) {
@@ -28,11 +29,42 @@ function toFiveWordHudSummary(value) {
     .join(' ');
 }
 
+// Resolved once per module load, after Vite's config hook has loaded `.env`
+// into process.env. Module-load timing is too early for hand-set env in some
+// test flows, so unit tests can rebuild it via createLocalHudSummaryResolver.
+const localHudSummary = createLocalHudSummaryResolver({});
+
 async function handleHudSummary(req, res) {
   if (req.method !== 'POST') {
     res.statusCode = 405;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Method not allowed' }));
+    return;
+  }
+
+  // Local backend selected: the five-word contract is unchanged, only the
+  // transport swaps to the local LLM. Costs nothing upstream, so it answers
+  // before any OpenAI key logic and is deliberately not rate-limited.
+  if (localHudSummary) {
+    try {
+      const body = await readRequestBody(req, 64 * 1024);
+      const context = JSON.parse(body || '{}');
+      const summary = await localHudSummary(context);
+      res.statusCode = summary ? 200 : 502;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store');
+      res.end(
+        JSON.stringify({
+          summary: summary || null,
+          error: summary ? null : 'Local HUD summary request failed',
+        }),
+      );
+    } catch {
+      console.warn('[hud-summary] local request failed');
+      res.statusCode = 502;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Local HUD summary request failed' }));
+    }
     return;
   }
 

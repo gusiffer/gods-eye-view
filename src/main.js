@@ -5,6 +5,9 @@ const application = createStandaloneApplication({
   googleApiKey: import.meta.env.GOOGLE_MAPS_API_KEY,
   cesiumToken: import.meta.env.CESIUM_ION_TOKEN,
   allowQaRegistration: import.meta.env.DEV,
+  // 'openwebui' swaps voice to the local pipeline; unset/anything else keeps
+  // the OpenAI Realtime path. Resolved at build-config time (see build/vite.js).
+  voice: { voiceMode: import.meta.env.GEV_VOICE_BACKEND },
 });
 
 application.start().catch((error) => {

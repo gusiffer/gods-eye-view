@@ -14,6 +14,11 @@
 # GOOGLE_MAPS_SERVER_API_KEY=
 # CESIUM_ION_TOKEN=
 # OPENAI_API_KEY=
+# Local voice (Open WebUI): set GEV_VOICE_BACKEND=openwebui, paste the key.
+# Voice model defaults to glm-5.3-flash:cloud with a qwen3:8b failover on
+# your local Ollama (see .env.example's local voice block for all knobs).
+# GEV_VOICE_BACKEND=
+# OPENWEBUI_API_KEY=
 # AISSTREAM_API_KEY=
 # FIRMS_MAP_KEY=
 # TOMTOM_API_KEY=
