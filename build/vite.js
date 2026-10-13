@@ -53,6 +53,7 @@ export function createBrowserViteConfig({
   googleApiKey,
   cesiumToken,
   mapillaryToken,
+  voiceBackend = 'openai',
   host = 'localhost',
   port = 4173,
   allowedHosts = DEFAULT_ALLOWED_HOSTS,
@@ -110,6 +111,11 @@ export function createBrowserViteConfig({
       // Mapillary client tokens are public by design (see SECURITY.md).
       'import.meta.env.MAPILLARY_CLIENT_TOKEN': JSON.stringify(
         mapillaryToken ?? '',
+      ),
+      // Which voice transport the page should wire: 'openai' (default) or
+      // 'openwebui' for the local pipeline. Not a credential.
+      'import.meta.env.GEV_VOICE_BACKEND': JSON.stringify(
+        voiceBackend || 'openai',
       ),
     },
     build: { chunkSizeWarningLimit: 1500 },

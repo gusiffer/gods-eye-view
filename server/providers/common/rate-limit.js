@@ -1,5 +1,6 @@
 import { makeRateLimiter } from '../../../src/sources/rateLimit.js';
-export { makeRateLimiter } from '../../../src/sources/rateLimit.js';
+
+export { makeRateLimiter };
 
 /**
  * Resolve the per-IP, per-minute cap for a cost-bearing proxy from its env var.
@@ -49,6 +50,28 @@ export function makeCostRateLimiter(envValue, defaultPerMin) {
     max,
     globalMax: max * 20,
   });
+}
+
+/**
+ * Local LLM voice routes (`/api/llm/*`). Separate limiter from the OpenAI
+ * quota so a local-stack voice session cannot be starved by the cloud HUD
+ * budget (and vice versa). Default 60/min clears an active session: each turn
+ * is one chat request per tool round (a multi-tool turn is a few) plus one
+ * transcription and one speech synthesis per utterance, on one
+ * client — the browser, on loopback.
+ */
+const LLM_DEFAULT_PER_MIN = 60;
+
+let _llmRateLimiter;
+
+/** Local LLM voice routes. Null only when GEV_RATELIMIT_LLM_PER_MIN is 0. */
+export function makeLlmRateLimiter() {
+  if (_llmRateLimiter === undefined)
+    _llmRateLimiter = makeCostRateLimiter(
+      process.env.GEV_RATELIMIT_LLM_PER_MIN,
+      LLM_DEFAULT_PER_MIN,
+    );
+  return _llmRateLimiter;
 }
 
 /**
