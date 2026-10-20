@@ -29,7 +29,8 @@ export const KEY_SETUP_APPEND_HEADER =
 /**
  * Provider credentials, in display order — most magic per
  * minute first. `tier` mirrors the README's color legend: 'metered' (🔴) is a
- * billing-enabled account, 'free' (🟡) is a register-and-paste key.
+ * billing-enabled account, 'free' (🟡) is a register-and-paste key, and
+ * 'paid' (🔴) is an optional paid higher-rate token.
  * `clientExposed` marks the keys that are injected into the browser
  * bundle by design (restrict them at the provider, per SECURITY.md).
  * `hidden` keeps advanced configuration out of the panel and missing-key count.
@@ -72,6 +73,12 @@ export const KEY_SETUP_KEYS = Object.freeze([
     getUrl: 'https://docs.openwebui.com/getting-started/advanced-topics/api-key',
     envVars: Object.freeze(['OPENWEBUI_API_KEY']),
     tier: 'free',
+    id: 'gemini',
+    title: 'GEMINI', // i18n-ignore: provider product name
+    unlocks: msg('Gemini Live voice control'),
+    getUrl: 'https://aistudio.google.com/apikey',
+    envVars: Object.freeze(['GEMINI_API_KEY']),
+    tier: 'metered',
   }),
   Object.freeze({
     id: 'aisstream',
@@ -128,10 +135,12 @@ export const KEY_SETUP_KEYS = Object.freeze([
   Object.freeze({
     id: 'launch-library',
     title: 'LAUNCH LIBRARY', // i18n-ignore: provider product name
-    unlocks: msg('Higher space-missions request allowance'),
-    getUrl: 'https://thespacedevs.com',
+    unlocks: msg(
+      'Public space-missions access needs no key. Leave blank for standard use; paid tokens only raise request limits.',
+    ),
+    getUrl: 'https://thespacedevs.com/supportus',
     envVars: Object.freeze(['LL2_API_TOKEN']),
-    tier: 'free',
+    tier: 'paid',
   }),
 ]);
 
